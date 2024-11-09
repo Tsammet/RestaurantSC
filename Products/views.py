@@ -9,14 +9,16 @@ from .models import Category
 def createCategory(request):
 
     data = request.data #Request.data transforma los datos enviados por el usuario a Diccionario
+    image = request.FILES.get('image') #De esta manera obtenemos la imagen del request
 
     category = Category.objects.create( # Esta línea está usando el modelo Category para crear un nuevo objeto
 
-        name = data['categoryName']# name es el nombre del atributo del modelo, data es la información que estamos recibiendo del request y categoryName es lo que se envió 
+        name = data['categoryName'],# name es el nombre del atributo del modelo, data es la información que estamos recibiendo del request y categoryName es lo que se envió 
+        image = image
 
     )
 
-    return JsonResponse({'id': category.id, 'name': category.name})
+    return JsonResponse({'id': category.id, 'name': category.name, 'image_url': category.image.url if category.image else None})
 
 
 @api_view(['GET'])
@@ -43,7 +45,7 @@ def deleteCategory(request):
         return JsonResponse({"message" : 'Category wasn´t deleted'}, status = 400)
     
 
-@api_view(['PUT'])
+@api_view(['PUT']) #PUT ACTUALIZAR
 def updateCategory(request):
 
     try:
@@ -51,7 +53,12 @@ def updateCategory(request):
         categoryId = data['id']
         category = get_object_or_404(Category, pk = categoryId)
 
+        image = request.FILES.get('image')
+
         category.name = data.get('categoryName', category.name)
+        
+        if image:
+            category.image = image
 
         category.save()
 
