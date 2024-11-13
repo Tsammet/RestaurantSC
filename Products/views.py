@@ -2,12 +2,12 @@ import json
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from .models import Category
+from .models import Category, Product
 
 
 @api_view(['POST']) # API_VIEW ES UN DECORADOR QUE INDICA QUE TODAS LAS SOLICITUDES HTTP SERÁN TIPO POST
 def createCategory(request):
-
+    
     data = request.data #Request.data transforma los datos enviados por el usuario a Diccionario
     image = request.FILES.get('image') #De esta manera obtenemos la imagen del request
 
@@ -67,3 +67,74 @@ def updateCategory(request):
     except(ValueError, KeyError):
 
         return JsonResponse({"error": 'Id Category wasn´t found'})
+
+@api_view(['POST']) 
+def createProduct(request):
+    
+    data = request.data
+
+    image = request.FILES.get('image')
+
+    try:
+        category = Category.objects.get(id=data['category'])
+
+    except Category.DoesNotExist:
+
+        return JsonResponse({'error': 'La categoría no existe.'}, status=400)
+
+    product = Product.objects.create(
+        name = data['productName'],
+        image = image,
+        description = data['description'],
+        price = data['price'],
+        category = category
+    )
+
+    return JsonResponse({'id': product.id, 'productName': product.name, 'price': product.price, 'description' : product.description, 'category': product.category.name  })
+
+@api_view(['GET'])
+def showProducts(request):
+
+    products = Product.objects.all().values()
+
+    return JsonResponse(list(products), safe = False)
+
+@api_view(['DELETE'])
+def deleteProduct(request):
+
+    try:
+        data = request.data
+        productId = data['id']
+        product = get_object_or_404(Product, pk = productId)
+        product.delete()
+
+        return JsonResponse({'message' : 'Product named ' + product.name + " was deleted succesfully!"}, status = 204)
+    
+    except (ValueError, KeyError):
+        return JsonResponse({"message" : 'Product wasn´t deleted'}, status = 400)
+    
+@api_view(['PUT'])
+
+def updateProduct(request):
+
+    
+    try:
+        data = request.data
+        productId = data['id']
+        product = get_object_or_404(Product, pk = productId)
+        
+        image = request.FILES.get('image')
+
+        product.name = data.get('productName', product.name)
+        product.description = data.get('description', product.description)
+        product.price = data.get('price', product.price)
+
+        if image:
+            product.image = image
+
+        product.save()
+
+        return JsonResponse({'id' : product.id, 'name': product.name, 'description': product.description, 'price': product.price}, status = 200 )
+    
+    except (ValueError, KeyError):
+        return JsonResponse({"error" : 'Id Product wasnot found'})
