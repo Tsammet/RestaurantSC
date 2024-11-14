@@ -5,6 +5,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
+from .models import Profile
 
 
 # Create your views here.
@@ -37,6 +38,9 @@ def loginUser(request):
 
         token, created = Token.objects.get_or_create(user = user)
 
-        return Response({'token':token.key, 'username': user.username, }, status=status.HTTP_200_OK)
+        profile = user.profile
+        role = profile.role
+
+        return Response({'token':token.key, 'username': user.username, 'role': role }, status=status.HTTP_200_OK)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
