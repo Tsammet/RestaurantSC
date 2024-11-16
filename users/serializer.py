@@ -28,11 +28,14 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         username = data.get('username')
         password = data.get('password')
+        print(f"DEBUG: username={username}, password={password}")
 
         user = authenticate(username = username, password = password)
         if user is None:
-            raise serializers.ValidationError("Credenciales incorrectas")
-        
+            raise serializers.ValidationError({
+                "error": "Credenciales incorrectas. Por favor verifica tu usuario y contraseña."
+            })
+    
         data['user'] = user
 
         return data

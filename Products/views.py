@@ -1,11 +1,14 @@
 import json
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from users.permissions import isAdminUser
+from rest_framework.permissions import IsAuthenticated
 from .models import Category, Product
 
 
 @api_view(['POST']) # API_VIEW ES UN DECORADOR QUE INDICA QUE TODAS LAS SOLICITUDES HTTP SERÁN TIPO POST
+@permission_classes([isAdminUser, IsAuthenticated])
 def createCategory(request):
     
     data = request.data #Request.data transforma los datos enviados por el usuario a Diccionario
@@ -30,6 +33,7 @@ def showCategories(request):
 
 
 @api_view(['DELETE'])
+@permission_classes([isAdminUser])
 def deleteCategory(request):
 
     try:
@@ -46,6 +50,7 @@ def deleteCategory(request):
     
 
 @api_view(['PUT']) #PUT ACTUALIZAR
+@permission_classes([isAdminUser])
 def updateCategory(request):
 
     try:
@@ -69,6 +74,7 @@ def updateCategory(request):
         return JsonResponse({"error": 'Id Category wasn´t found'})
 
 @api_view(['POST']) 
+@permission_classes([isAdminUser])
 def createProduct(request):
     
     data = request.data
@@ -100,6 +106,7 @@ def showProducts(request):
     return JsonResponse(list(products), safe = False)
 
 @api_view(['DELETE'])
+@permission_classes([isAdminUser])
 def deleteProduct(request):
 
     try:
@@ -114,7 +121,7 @@ def deleteProduct(request):
         return JsonResponse({"message" : 'Product wasn´t deleted'}, status = 400)
     
 @api_view(['PUT'])
-
+@permission_classes([isAdminUser])
 def updateProduct(request):
 
     
