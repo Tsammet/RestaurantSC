@@ -4,6 +4,8 @@ from .models import Reviews
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from django.contrib.auth.models import User
+
 
 # Create your views here.
 @api_view(['POST', 'GET'])
@@ -29,6 +31,15 @@ def review(request):
 
     elif request.method == "GET":
 
-        reviews = Reviews.objects.all().values()
+        reviews = Reviews.objects.all()
+        review_data = []
         
-        return Response(list(reviews))
+        for review in reviews:
+            user = User.objects.get(id= review.user_id)
+            review_data.append({
+                'id' : review.id,
+                'title' : review.title,
+                'review' : review.review,
+                'user' : user.username
+            })
+        return Response(review_data)
