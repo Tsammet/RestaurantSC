@@ -39,6 +39,7 @@ def view_cart(request):
     items = []
     for item in cart_items:
         items.append({
+            'product_id' : item.product.id,
             'product_name': item.product.name,
             'quantity': item.quantity,
             'price': item.product.price,
